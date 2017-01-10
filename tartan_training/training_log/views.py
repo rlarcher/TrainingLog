@@ -4,11 +4,25 @@ from rest_framework.response import Response
 from training_log.models import *
 from training_log.serializers import *
 
+@api_view(['POST'])
+def create_user(request):
+    serialized = UserSerializer(data=request.DATA)
+    if serialized.is_valid():
+        User.objects.create_user(
+            serialized.init_data['email'],
+            serialized.init_data['username'],
+            serialized.init_data['password']
+        )
+        return Response(serialized.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response(serialized._errors, status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['GET', 'POST'])
 def runner(request):
     if request.method == 'GET':
         runners = Runner.objects.all()
         serializer = RunnerSerializer(runners, many=True)
+        print request.user
         return Response(serializer.data)
     elif request.method == 'POST':
         serializer = RunnerSerializer(data=request.data)
